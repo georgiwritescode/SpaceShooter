@@ -1,0 +1,11 @@
+#canvas-container{
+    width: 100%;
+    text-align: center;
+}
+#canvas{
+    background: #252729;
+    display: inline;
+}
+body{
+    background: #1E1F21;
+}
