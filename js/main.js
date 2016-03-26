@@ -3,7 +3,7 @@ var game = new Phaser.Game(1200, 640, Phaser.AUTO, null, {
 });
 
 var sniper;
-var rocket;
+var rockets;
 var fireRate = 40;
 var nextFire = 0;
 
@@ -26,15 +26,12 @@ function create() {
     sniper.anchor.set(0.5, 0.5);
     sniper.body.collideWorldBounds = true;
     sniper.body.allowRotation = false;
-
-    //rocket
-    //rocket = game.add.sprite(600,300,'rocket');
-    //var fly = rocket.animations.add('fly');
-    //rocket.animations.play('fly',4,true);
-    //game.physics.enable(rocket,Phaser.Physics.ARCADE);
-    //rocket.body.velocity.set(300,300);
-    //rocket.body.collideWorldBounds = true;
-
+    /*
+    var tween = this.game.add.tween(this.sniper.body).to({
+        x: game.input.activePointer.rightButton.x,
+        y: game.input.activePointer.rightButton.y
+    }, 1000, Phaser.Easing.Linear.None, true);
+    */
     rockets = game.add.group();
     rockets.enableBody = true;
     rockets.physicsBodyType = Phaser.Physics.ARCADE;
@@ -44,18 +41,17 @@ function create() {
 
 }
 function update() {
-    sniper.rotation = game.physics.arcade.angleToPointer(sniper);
+    // add math.pi/2 so the front follows the mouse pointer
+    sniper.rotation = game.physics.arcade.angleToPointer(sniper) + Math.PI/2;
     if(game.input.activePointer.rightButton.isDown){
         moveToPosition();
-    }else if (game.input.activePointer.leftButton.isDown)
-    {
+    }else if (game.input.activePointer.leftButton.isDown){
         fire();
     }
 }
 
 function fire() {
-    if (game.time.now > nextFire)
-    {
+    if (game.time.now > nextFire){
         nextFire = game.time.now + fireRate;
         var rocket = rockets.getFirstDead();
         rocket.reset(sniper.x - 8 , sniper.y - 8);
@@ -63,5 +59,6 @@ function fire() {
 }
 
 function moveToPosition(){
-    game.physics.arcade.moveToPointer(sniper,400);
+    game.physics.arcade.moveToPointer(sniper,100);
+
 }
