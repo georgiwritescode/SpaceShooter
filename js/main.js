@@ -4,6 +4,7 @@ var game = new Phaser.Game(1200, 640, Phaser.AUTO, null, {
 
 var sniper;
 var rockets;
+var target = {};
 var fireRate = 100;
 var nextFire = 0;
 
@@ -14,6 +15,7 @@ function preload() {
     game.stage.backgroundColor = '#252729';
     game.load.spritesheet('sniper','resources/sniper.png',53,63,7);
     game.load.spritesheet('rocket','resources/rocket.png',26,49,3);
+    game.load.spritesheet('boom','resources/explosion.png',155.15, 128,30);
 }
 function create() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -37,8 +39,7 @@ function create() {
     rockets = game.add.group();
     rockets.enableBody = true;
     rockets.physicsBodyType = Phaser.Physics.ARCADE;
-
-    rockets.createMultiple(10000, 'rocket');
+    rockets.createMultiple(1000, 'rocket');
     rockets.setAll('checkWorldBounds', true);
     rockets.setAll('outOfBoundsKill', true);
 
@@ -48,23 +49,31 @@ function update() {
     //otherwise it's a bit sideways
     sniper.rotation = game.physics.arcade.angleToPointer(sniper) + Math.PI/2;
 
-     //disabled the right-click popUp menu in the html file
+    //disabled the right-click popUp menu in the html file
     //body oncontextmenu="return false"
     if(game.input.activePointer.rightButton.isDown){
         moveToPosition();
     }else if (game.input.activePointer.leftButton.isDown){
 
-       // console.log(pos.x,pos.y);
         fire();
     }
 }
+
+target = (function(){
+    var targetInfo ={};
+    var pos = game.input.activePointer.position;
+    return  targetInfo = {
+        targetX : pos.x,
+        targetY : pos.y
+    };
+}());
 
 function fire() {
     // countDead() and getFirstDead are nice to have since the game might be expanded
     if (game.time.now > nextFire && rockets.countDead() > 0){
         nextFire = game.time.now + fireRate;
         var rocket = rockets.getFirstDead();
-        rocket.reset(sniper.x - 8 , sniper.y - 8);
+        rocket.reset(sniper.x, sniper.y);
 
         //declare tweens on scope in order to avoid bugs,
         //and rockets moving with the player
@@ -73,16 +82,8 @@ function fire() {
         tween = this.game.add.tween(rocket).to({
             x: pos.x,
             y: pos.y
-        }, 1000, Phaser.Easing.Linear.None, true);
+        }, 100, Phaser.Easing.Linear.None, true);
     }
-
-    //does not work
-    /*if(tween.pos.x === target.targetX && tween.pos.y === target.targetY ){
-        console.log('boom');
-    }*/
-    //just control msg to check if all is ok
-    console.log('shooting');
-
 }
 
 function moveToPosition(){
@@ -95,4 +96,9 @@ function moveToPosition(){
         x: pos.x,
         y: pos.y
     }, 1000, Phaser.Easing.Linear.None, true);
+}
+
+function makeBoom(){
+    console.log('boom');
+    rockets.kill();
 }
