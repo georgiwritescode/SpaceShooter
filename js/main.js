@@ -3,6 +3,7 @@ var game = new Phaser.Game(1200, 640, Phaser.AUTO, null, {
 });
 
 var sniper;
+var rocket;
 var rockets;
 var target = {};
 var fireRate = 100;
@@ -40,8 +41,18 @@ function create() {
     rockets.enableBody = true;
     rockets.physicsBodyType = Phaser.Physics.ARCADE;
     rockets.createMultiple(1000, 'rocket');
+    rockets.callAll('events.onOutOfBounds.add','events.onOutOfBounds', resetRocket);
+    rockets.callAll('anchor.setTo','anchor', 0.5,1.0);
     rockets.setAll('checkWorldBounds', true);
-    rockets.setAll('outOfBoundsKill', true);
+
+    // animations for the explosion
+   // var boom = rockets.animations.play('boom');
+    //rockets.animation.play('boom',32,true);
+
+}
+function resetRocket(){
+    rocket.kill();
+    rocket.animations.play('boom');
 
 }
 function update() {
@@ -54,19 +65,17 @@ function update() {
     if(game.input.activePointer.rightButton.isDown){
         moveToPosition();
     }else if (game.input.activePointer.leftButton.isDown){
-
         fire();
+        //makeBoom(game.physics.arcade.collide(rockets,target));
     }
+    //this.physics.arcade.overlap(this.rocket,this.target,this.targetHit,null,this);
 }
 
-target = (function(){
-    var targetInfo ={};
-    var pos = game.input.activePointer.position;
-    return  targetInfo = {
-        targetX : pos.x,
-        targetY : pos.y
-    };
-}());
+
+/*target = {
+    x: game.input.x,
+    y: game.input.y
+};*/
 
 function fire() {
     // countDead() and getFirstDead are nice to have since the game might be expanded
@@ -83,6 +92,7 @@ function fire() {
             x: pos.x,
             y: pos.y
         }, 100, Phaser.Easing.Linear.None, true);
+        makeBoom();
     }
 }
 
@@ -100,5 +110,5 @@ function moveToPosition(){
 
 function makeBoom(){
     console.log('boom');
-    rockets.kill();
 }
+
