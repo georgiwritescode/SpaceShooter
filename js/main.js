@@ -2,12 +2,16 @@ var game = new Phaser.Game(1200, 640, Phaser.AUTO, null, {
     preload: preload, create: create, update: update
 });
 
-var sniper;
-var rocket;
-var rockets;
-var target = {};
-var fireRate = 100;
-var nextFire = 0;
+var sniper,
+    rocket,
+    startBtn;
+
+var rockets = [];
+//for faster rocket launch chang the following
+var fireRate = 300;
+var nextFire = 10;
+var playing = false;
+
 
 function preload() {
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
@@ -17,6 +21,7 @@ function preload() {
     game.load.spritesheet('sniper','resources/sniper.png',53,63,7);
     game.load.spritesheet('rocket','resources/rocket.png',26,49,3);
     game.load.spritesheet('boom','resources/explosion.png',155.15, 128,30);
+    game.load.image('startBtn','resources/start-game-button.png', 328, 59);
 }
 function create() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -41,20 +46,15 @@ function create() {
     rockets.enableBody = true;
     rockets.physicsBodyType = Phaser.Physics.ARCADE;
     rockets.createMultiple(1000, 'rocket');
-    rockets.callAll('events.onOutOfBounds.add','events.onOutOfBounds', resetRocket);
+    rockets.callAll('events.onOutOfBounds.add','events.onOutOfBounds', makeBoom);
     rockets.callAll('anchor.setTo','anchor', 0.5,1.0);
     rockets.setAll('checkWorldBounds', true);
 
-    // animations for the explosion
-   // var boom = rockets.animations.play('boom');
-    //rockets.animation.play('boom',32,true);
 
+    startBtn = game.add.button(game.world.width*0.5, game.world.height*0.5, 'startBtn', startGame, this, 1, 0, 2);
+    startBtn.anchor.set(0.5);
 }
-function resetRocket(){
-    rocket.kill();
-    rocket.animations.play('boom');
 
-}
 function update() {
     // add math.pi/2 so the front follows the mouse pointer
     //otherwise it's a bit sideways
@@ -64,24 +64,18 @@ function update() {
     //body oncontextmenu="return false"
     if(game.input.activePointer.rightButton.isDown){
         moveToPosition();
-    }else if (game.input.activePointer.leftButton.isDown){
+
+    }if (game.input.activePointer.leftButton.isDown && playing === true){
         fire();
-        //makeBoom(game.physics.arcade.collide(rockets,target));
     }
-    //this.physics.arcade.overlap(this.rocket,this.target,this.targetHit,null,this);
 }
 
-
-/*target = {
-    x: game.input.x,
-    y: game.input.y
-};*/
-
 function fire() {
-    // countDead() and getFirstDead are nice to have since the game might be expanded
+
     if (game.time.now > nextFire && rockets.countDead() > 0){
         nextFire = game.time.now + fireRate;
         var rocket = rockets.getFirstDead();
+        //var rocket = rockets.getFirstExists(false);
         rocket.reset(sniper.x, sniper.y);
 
         //declare tweens on scope in order to avoid bugs,
@@ -92,7 +86,9 @@ function fire() {
             x: pos.x,
             y: pos.y
         }, 100, Phaser.Easing.Linear.None, true);
-        makeBoom();
+        //resetRocket();
+        makeBoom(rocket);
+
     }
 }
 
@@ -101,14 +97,27 @@ function moveToPosition(){
     //moveToXY only sets the vector but does not stop the sprite when needed
     //and without the tween the player overshoots the arriving point
     var pos = game.input.activePointer.position;
-
     tween = this.game.add.tween(sniper).to({
         x: pos.x,
         y: pos.y
     }, 1000, Phaser.Easing.Linear.None, true);
+
 }
 
-function makeBoom(){
+function makeBoom(input){
+    var clickCoord = game.input.activePointer.position;
+    //animation for explosion
+    //var xPos = game.input.activePointer.position;
     console.log('boom');
+    //console.log(xPos);
+
+    /*if(clickCoord) {
+        input.destroy();
+    }*/
 }
 
+function startGame() {
+    startBtn.destroy();
+    //rocket.body.velocity.set(150, -150);
+    playing = true;
+}
