@@ -5,7 +5,8 @@ var game = new Phaser.Game(1200, 640, Phaser.AUTO, null, {
 var sniper,
     rocket,
     startBtn;
-
+//rockets need re-working
+//if scoreboard is needed
 var rockets = [];
 //for faster rocket launch chang the following
 var fireRate = 300;
@@ -14,9 +15,10 @@ var playing = false;
 
 
 function preload() {
-    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
     game.scale.pageAlignHorizontally = true;
     game.scale.pageAlignVertically = true;
+    game.scale.startFullScreen();
     game.stage.backgroundColor = '#252729';
     game.load.spritesheet('sniper','resources/sniper.png',53,63,7);
     game.load.spritesheet('rocket','resources/rocket.png',26,49,3);
@@ -24,8 +26,8 @@ function preload() {
     game.load.image('startBtn','resources/start-game-button.png', 328, 59);
 }
 function create() {
-    game.physics.startSystem(Phaser.Physics.ARCADE);
 
+    game.physics.startSystem(Phaser.Physics.ARCADE);
     //sniper sprites and animations
     sniper = game.add.sprite(600,320,'sniper');
 
@@ -46,7 +48,7 @@ function create() {
     rockets.enableBody = true;
     rockets.physicsBodyType = Phaser.Physics.ARCADE;
     rockets.createMultiple(1000, 'rocket');
-    rockets.callAll('events.onOutOfBounds.add','events.onOutOfBounds', makeBoom);
+    //rockets.callAll('events.onOutOfBounds.add','events.onOutOfBounds', makeBoom);
     rockets.callAll('anchor.setTo','anchor', 0.5,1.0);
     rockets.setAll('checkWorldBounds', true);
 
@@ -56,6 +58,7 @@ function create() {
 }
 
 function update() {
+
     // add math.pi/2 so the front follows the mouse pointer
     //otherwise it's a bit sideways
     sniper.rotation = game.physics.arcade.angleToPointer(sniper) + Math.PI/2;
@@ -65,7 +68,7 @@ function update() {
     if(game.input.activePointer.rightButton.isDown){
         moveToPosition();
 
-    }if (game.input.activePointer.leftButton.isDown && playing === true){
+    }else if(game.input.activePointer.leftButton.isDown && playing === true){
         fire();
     }
 }
@@ -86,9 +89,8 @@ function fire() {
             x: pos.x,
             y: pos.y
         }, 100, Phaser.Easing.Linear.None, true);
-        //resetRocket();
+        console.log(tween);
         makeBoom(rocket);
-
     }
 }
 
@@ -106,18 +108,11 @@ function moveToPosition(){
 
 function makeBoom(input){
     var clickCoord = game.input.activePointer.position;
-    //animation for explosion
-    //var xPos = game.input.activePointer.position;
     console.log('boom');
-    //console.log(xPos);
-
-    /*if(clickCoord) {
-        input.destroy();
-    }*/
+    console.log(clickCoord);
 }
 
 function startGame() {
     startBtn.destroy();
-    //rocket.body.velocity.set(150, -150);
     playing = true;
 }
