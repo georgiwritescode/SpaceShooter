@@ -4,25 +4,24 @@ var game = new Phaser.Game(1200, 640, Phaser.AUTO, null, {
 
 var sniper,
     rocket,
+    explosion,
     startBtn;
 //rockets need re-working
 //if scoreboard is needed
-var rockets = [];
 //for faster rocket launch chang the following
 var fireRate = 300;
 var nextFire = 10;
 var playing = false;
-
+var explpode = false;
 
 function preload() {
     game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
     game.scale.pageAlignHorizontally = true;
     game.scale.pageAlignVertically = true;
-    game.scale.startFullScreen();
     game.stage.backgroundColor = '#252729';
     game.load.spritesheet('sniper','resources/sniper.png',53,63,7);
     game.load.spritesheet('rocket','resources/rocket.png',26,49,3);
-    game.load.spritesheet('boom','resources/explosion.png',155.15, 128,30);
+    game.load.spritesheet('boom','resources/explosion.png',155.15, 128);
     game.load.image('startBtn','resources/start-game-button.png', 328, 59);
 }
 function create() {
@@ -52,9 +51,14 @@ function create() {
     rockets.callAll('anchor.setTo','anchor', 0.5,1.0);
     rockets.setAll('checkWorldBounds', true);
 
-
+    //load start button sprite sheet
     startBtn = game.add.button(game.world.width*0.5, game.world.height*0.5, 'startBtn', startGame, this, 1, 0, 2);
     startBtn.anchor.set(0.5);
+
+    //explosions
+     explosions = game.add.group();
+     explosions.createMultiple(1000, 'boom');
+     explosions.physicsBodyType = Phaser.Physics.ARCADE;
 }
 
 function update() {
@@ -70,14 +74,15 @@ function update() {
 
     }else if(game.input.activePointer.leftButton.isDown && playing === true){
         fire();
+       // game.physics.arcade.overlap(rockets, makeBoom, null, this);
     }
 }
 
-function fire() {
+function fire(rocket) {
 
     if (game.time.now > nextFire && rockets.countDead() > 0){
         nextFire = game.time.now + fireRate;
-        var rocket = rockets.getFirstDead();
+        rocket = rockets.getFirstDead();
         //var rocket = rockets.getFirstExists(false);
         rocket.reset(sniper.x, sniper.y);
 
@@ -89,7 +94,7 @@ function fire() {
             x: pos.x,
             y: pos.y
         }, 100, Phaser.Easing.Linear.None, true);
-        console.log(tween);
+        //console.log(tween);
         makeBoom(rocket);
     }
 }
@@ -107,9 +112,23 @@ function moveToPosition(){
 }
 
 function makeBoom(input){
-    var clickCoord = game.input.activePointer.position;
-    console.log('boom');
-    console.log(clickCoord);
+
+    //var clickCoord = game.input.activePointer.position;
+    //console.log('boom');
+    //console.log(clickCoord);
+   // input.kill();
+
+
+    //var explosion = explosions.getFirstExists(false);
+    //explosion.reset(game.input.activePointer.position);
+    //explosion.play('boom', 30, false, true);
+    if(explpode === true) {
+        input.kill();
+        //explpode = true;
+        console.log('should be deleted')
+    }
+    console.log('BOOM');
+
 }
 
 function startGame() {
